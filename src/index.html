@@ -1,0 +1,59 @@
+<html>
+  <head>
+    <title>circumplexus</title>
+    <!-- build:css style.css -->
+    <link rel="stylesheet" href="css/normalize.css"></link>
+    <link rel="stylesheet" href="css/quiz.css"></link>
+    <link rel="stylesheet" href="css/admin.css"></link>
+    <!-- endbuild -->
+    <script src="http://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha256-k2WSCIexGzOj3Euiig+TlR8gA0EmPjuc79OEeY5L45g=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/svg.js/2.6.3/svg.min.js"></script>
+  </head>
+  <body class="nightmode">
+    <div id="canvas"></div>
+    <div id="settings" class="settings">
+      <div class="row">
+        <label>base</label>
+        <input name="base" class="vector" type="number" value="90" min="0" max="100"/>
+      </div>
+      <div class="row">
+        <label>grain</label>
+        <input name="grain" class="vector" type="number" value="3" min="0" max="100"/>
+      </div>
+      <div class="row">
+        <label>temple</label>
+        <input name="temple" class="vector" type="number" value="0" min="0" max="100"/>
+      </div>
+    </div>
+    <!-- build:js script.js -->
+    <script src="js/circumplexus.js"></script>
+    <script src="js/relate.js"></script>
+    <script src="js/geometry.js"></script>
+    <script src="js/draw.js"></script>
+    <!-- endbuild -->
+    <script type="text/javascript">
+      var settings = {
+        'image'  :  '/static/img/pattern/bk5.png',
+        'grain'  :  6,
+        'base'   :  65,
+        'temple' :  0.571428571429,
+        'bump'   :  [133,131,73,72,82,133,],
+      }
+      var s = new Circumplexus('wireframe', 'canvas');
+      var shape = s.process.data(settings);
+
+      // var wait = 0;
+      // $('#settings').on('input change', function() {
+      //   wait++;
+      //   var timer = window.setTimeout(function(){
+      //     wait--;
+      //     if(wait == 0){
+      //       // if wait == 0, fire this function once!
+      //       var shape = s.initialize();
+      //     }
+      //     window.clearTimeout(timer);
+      //   },350);
+      // })
+    </script>
+  </body>
+</html>
