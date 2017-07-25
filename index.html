@@ -1,0 +1,93 @@
+<html>
+  <head>
+    <title>hello</title>
+    <!-- build:css style.css -->
+    <link rel="stylesheet" href="css/normalize.css"></link>
+    <link rel="stylesheet" href="css/quiz.css"></link>
+    <link rel="stylesheet" href="css/admin.css"></link>
+    <!-- endbuild -->
+    <!-- build:js lib.js -->
+    <script type="text/javascript" src="js/jquery-3.1.1.min.js"></script>
+    <script type="text/javascript" src="js/svg.min.js"></script>
+    <!-- endbuild -->
+  </head>
+  <body class="nightmode">
+  <!-- <body class="daymode"> -->
+    <div class="page">
+      <div id="canvas" class="subpage"></div>
+    </div>
+    <div id="settings" class="settings">
+      <div class="row">
+        <label>base</label>
+        <input name="base" class="vector" type="number" value="90" min="0" max="100"/>
+      </div>
+      <div class="row">
+        <label>grain</label>
+        <input name="grain" class="vector" type="number" value="3" min="0" max="100"/>
+      </div>
+      <div class="row">
+        <label>temple</label>
+        <input name="temple" class="vector" type="number" value="0" min="0" max="100"/>
+      </div>
+    </div>
+    <!-- build:js ../script.js -->
+    <!-- <script src="js/construct.js"></script> -->
+    <!-- <script src="js/geometry.js"></script> -->
+    <!-- <script src="js/relationships.js"></script> -->
+    <!-- <script src="js/paint.js"></script> -->
+    <!-- <script src="js/shape.js"></script> -->
+    <script src="js/circumplexus-prototype.js"></script>
+    <script src="js/draw-prototype.js"></script>
+    <script src="js/relate-prototype.js"></script>
+    <script src="js/geometry-prototype.js"></script>
+    <!-- endbuild -->
+    <script type="text/javascript">
+      var settings = {
+        'image'  :  '/static/img/pattern/bk5.png',
+        'grain'  :  6,
+        'base'   :  65,
+        'temple' :  0.571428571429,
+        'bump'   :  [133,131,73,72,82,133,],
+      }
+      var s = new Circumplexus('png', 'canvas');
+      var shape = s.process.data(settings);
+
+      var Test = function(name){
+        this.name = name;
+        this.func = function(){
+          console.log(this.read.me(this));
+          this.read.other(this, 'beluga');
+          console.log(this.read.me(this));
+        }
+        this.func();
+      }
+
+      Test.prototype.read = {
+        me: function(a){
+          console.log(a);
+          return a.name;
+        },
+        other: function(a, name){
+          return a.name = name;
+        }
+      }
+
+      var t = new Test('holla');
+      // t.read.me(t);
+      // t.read.other(t, 'okay');
+      // t.read.me(t);
+      var wait = 0;
+      // $('#settings').on('input change', function() {
+      //   wait++;
+      //   var timer = window.setTimeout(function(){
+      //     wait--;
+      //     if(wait == 0){
+      //       // if wait == 0, fire this function once!
+      //       var shape = s.initialize();
+      //     }
+      //     window.clearTimeout(timer);
+      //   },350);
+      // })
+    </script>
+  </body>
+</html>
