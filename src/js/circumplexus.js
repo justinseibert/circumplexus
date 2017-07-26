@@ -21,30 +21,25 @@ var Circumplexus = function(format,container){
 			'max' : 190,
 		},
 	  'inch' : 96,
-	  'the_shape'     : [],
-	  'the_base'      : [],
-	  'the_surrounds' : [],
-	  'the_mirror'    : [],
-	  'the_connect'   : [],
-	  'the_tabs'      : [],
-	  'the_data'      : [],
-		'bounds'        : {
+		'segment' : {},
+	  'shape' : [],
+		'bounds' : {
 			'top'    : 0,
 			'bottom' : 0,
 			'left'   : 0,
 			'right'  : 0,
 		},
-		'scaled'        : false,
-	  'temple'        : 0,
-	  'offset'        : 30,
-		'image'         : '',
-		'format'        : format,
-		'container'     : (container == undefined) ? 'results' : container,
+		'scaled'    : false,
+	  'temple'    : 0,
+	  'offset'    : 30,
+		'image'     : '',
+		'format'    : format,
+		'container' : (container == undefined) ? 'results' : container,
 	}
 	cpx.update = function(segment, collection){
-		cpx.def[collection].push(segment);
-		cpx.def.the_shape.push(segment);
-		cpx.def.the_data.push(cpx.data(segment));
+		cpx.def.shape.push(cpx.data(segment));
+		var count = cpx.def.segment[collection];
+		cpx.def.segment[collection] = (count == undefined) ? 1 : count+1;
 	},
 	cpx.data = function(coords){
 		var data = {
@@ -163,7 +158,7 @@ var Circumplexus = function(format,container){
 	    cpx.process.shape(starter)
 		},
 		shape: function(data){
-			console.log(data);
+			// console.log(data);
 			var print_page = document.createElement('div');
 			print_page.className = 'page-size';
 			document.body.appendChild(print_page);
@@ -174,13 +169,13 @@ var Circumplexus = function(format,container){
 					[ data[i],  data[i+1] ],
 					[ data[i+2], data[i+3] ],
 				];
-				cpx.update(segment,'the_base');
+				cpx.update(segment,'base');
 			}
-			cpx.relate.surround(cpx.def.the_shape);
-			cpx.relate.mirror(cpx.def.the_shape, 'vertical', 0, 'the_mirror');
-			cpx.relate.connect(cpx.def.the_shape);
+			cpx.relate.surround();
+			cpx.relate.mirror('shape', 'vertical', 0, 'mirror');
+			cpx.relate.connect();
 			cpx.relate.tabs();
-			cpx.relate.mirror(cpx.def.the_tabs, 'vertical', 0, 'the_tabs');
+			cpx.relate.mirror('tabs', 'vertical', 0, 'tabs');
 
 			if(cpx.def.format == 'wireframe'){
 				cpx.draw.PNG(this);
@@ -353,7 +348,7 @@ var Circumplexus = function(format,container){
 		},
 	},
 	cpx.relate = {
-		surround: function(coords) {
+		surround: function() {
 	    /******
 	    this steps takes the provided shape
 	    and calculates the surrounding (folded) edges.
@@ -364,7 +359,7 @@ var Circumplexus = function(format,container){
 	    ******/
 	    var surround = [];
 	    // generate all calculations from previously solved points
-	    for (var i = cpx.def.the_base.length-1; i > 0; i--) {
+	    for (var i = cpx.def.segment.base-1; i > 0; i--) {
 	      // x1 minus x0 implies counterclockwise creation of base-shape
 	      // angles in radians
 	      var angle = {
@@ -373,23 +368,37 @@ var Circumplexus = function(format,container){
 	        'found' : Math.PI/2 - cpx.def.temple,
 	      }
 	      var delta = {
-	        'x' : cpx.def.the_data[i].delta.x,
-	        'y' : cpx.def.the_data[i].delta.y,
+	        'x' : cpx.def.shape[i].delta.x,
+	        'y' : cpx.def.shape[i].delta.y,
 	      }
 	      var distance = {
 	        'x': cpx.geom.lawofsines(delta.x, angle.right, false, angle.given),
 	        'y': cpx.geom.hypotenuse(delta.y, cpx.geom.lawofsines(delta.x, angle.right, false, angle.found)),
 	      }
-	      var point = (i < cpx.def.the_base.length-1) ? surround : cpx.def.the_shape;
-	      var previous = point.length-1;
-	      var segment = [
-	        [ point[previous][1][cpx.x], point[previous][1][cpx.y] ],
-	        [ point[previous][1][cpx.x]+distance.x, point[previous][1][cpx.y]+distance.y ]
-	      ];
+	      // var point = (i < cpx.def.segment.base-1) ? surround : cpx.def.the_shape;
+	      // var previous = point.length-1;
+	      // var segment = [
+	      //   [ point[previous][1][cpx.x], point[previous][1][cpx.y] ],
+	      //   [ point[previous][1][cpx.x]+distance.x, point[previous][1][cpx.y]+distance.y ]
+	      // ];
+				if (i < cpx.def.segment.base-1){
+					var point = surround;
+					var previous = point.length-1;
+					var segment = [
+		        [ point[previous][1][cpx.x], point[previous][1][cpx.y] ],
+		        [ point[previous][1][cpx.x]+distance.x, point[previous][1][cpx.y]+distance.y ]
+		      ];
+				} else {
+					var point = cpx.def.segment.base-1;
+					var segment = [
+						[ cpx.def.shape[point].x1, cpx.def.shape[point].y1 ],
+						[ cpx.def.shape[point].x1+distance.x, cpx.def.shape[point].y1+distance.y ]
+					]
+				}
 	      surround.push(segment);
 	    }
 	    surround.reverse().forEach(function(segment){
-	      cpx.update(segment,'the_surrounds');
+	      cpx.update(segment,'surrounds');
 	    });
 	  },
 	  mirror: function(coords,flip,origin,array){
@@ -399,50 +408,49 @@ var Circumplexus = function(format,container){
 
 	          the_axis + (the axis - the coord)
 	      ******/
-	      var i = 0;
-	      var complete = (coords == cpx.def.the_tabs) ? coords.length-3 : coords.length;
-
+				var i = (coords == 'tabs') ? (cpx.def.shape.length - cpx.def.segment.tabs) : 0;
+	      var complete = (coords == 'tabs') ? cpx.def.shape.length-3 : cpx.def.shape.length;
 	      if (flip == 'vertical'){
-	        var axis = cpx.def.the_data[origin].x0 + cpx.def.offset;
+	        var axis = cpx.def.shape[origin].x0 + cpx.def.offset;
 	        while (i < complete) {
 	          var segment = [
-	            [ axis + (axis - coords[i][0][cpx.x]), coords[i][0][cpx.y] ],
-	            [ axis + (axis - coords[i][1][cpx.x]), coords[i][1][cpx.y] ],
+	            [ 2*axis - cpx.def.shape[i].x0, cpx.def.shape[i].y0 ],
+	            [ 2*axis - cpx.def.shape[i].x1, cpx.def.shape[i].y1 ],
 	          ];
 	          cpx.update(segment,array);
 	          i++;
 	        }
 	      }
 	  },
-	  connect: function(coords){
+	  connect: function(){
 	    var connect = [];
 	    var split = [];
-	    var complete = coords.length/2;
+	    var complete = cpx.def.shape.length/2;
 	    for (var i = 0; i < complete; i++) {
 	      var j = i+complete;
 	      var segment = [
-	          [ cpx.def.the_data[i].x1, cpx.def.the_data[i].y1 ],
-	          [ cpx.def.the_data[j].x1, cpx.def.the_data[j].y1 ],
+	          [ cpx.def.shape[i].x1, cpx.def.shape[i].y1 ],
+	          [ cpx.def.shape[j].x1, cpx.def.shape[j].y1 ],
 	      ];
 	      connect.push(segment);
 	      if (i == 0) {
 	        var segment = [
-	            [ cpx.def.the_data[i].x0, cpx.def.the_data[i].y0 ],
-	            [ cpx.def.the_data[j].x0, cpx.def.the_data[j].y0 ],
+	            [ cpx.def.shape[i].x0, cpx.def.shape[i].y0 ],
+	            [ cpx.def.shape[j].x0, cpx.def.shape[j].y0 ],
 	        ];
 	        connect.push(segment);
 	        split = connect.splice(0,connect.length);
-	        i = cpx.def.the_surrounds.length;
+	        i = cpx.def.segment.surrounds;
 	      }
 	    }
 	    split.concat(connect.reverse()).reverse().forEach(function(segment){
-	      cpx.update(segment,'the_connect');
+	      cpx.update(segment,'connect');
 	    });
 	  },
 	  tabs: function(){
 	    var i = 1;
-	    var j = (cpx.def.the_base.length%2 > 0) ? true : false;
-	    var k = cpx.def.the_shape.length-1;
+	    var j = (cpx.def.segment.base%2 > 0) ? true : false;
+	    var k = cpx.def.shape.length-1;
 
 	    while (i <= k){
 	      var correlation = cpx.relate.correlation(i,j,k);
@@ -478,7 +486,7 @@ var Circumplexus = function(format,container){
 	            tabs[l],
 	            tabs[l+1],
 	          ];
-	          cpx.update(segment,'the_tabs');
+	          cpx.update(segment,'tabs');
 	        }
 	      }
 	      i+=2;
@@ -487,7 +495,7 @@ var Circumplexus = function(format,container){
 	  bounds: function(xs, ys){
 	    // must be called before new data is pushed to the_data
 	    var bound = cpx.def.bounds;
-	    if (cpx.def.the_data.length < 1){
+	    if (cpx.def.shape.length < 1){
 	      bound.left   = (xs[0] < xs[1]) ? xs[0] : xs[1];
 	      bound.right  = (xs[0] > xs[1]) ? xs[0] : xs[1];
 	      bound.top    = (ys[0] < ys[1]) ? ys[0] : ys[1];
@@ -536,41 +544,41 @@ var Circumplexus = function(format,container){
 	    // these points are reversed because direction of surrounds
 	    // to get tube0 to point to prong0, start tube0 from female point 1
 	    var exists = true;
-	    if (i < cpx.def.the_base.length) {
+	    if (i < cpx.def.segment.base) {
 	      var male  = i, // 1
-	          female  = i+cpx.def.the_surrounds.length, // 4
-	          tube_a = i-1+cpx.def.the_mirror.length*2, // 14
-	          tube_b = i+cpx.def.the_mirror.length*2; // 15
-	    } else if (i < cpx.def.the_mirror.length) {
-	      i = (j && (i+1 != cpx.def.the_mirror.length)) ? i+1 : i;
+	          female  = i+cpx.def.segment.surrounds, // 4
+	          tube_a = i-1+cpx.def.segment.mirror*2, // 14
+	          tube_b = i+cpx.def.segment.mirror*2; // 15
+	    } else if (i < cpx.def.segment.mirror) {
+	      i = (j && (i+1 != cpx.def.segment.mirror)) ? i+1 : i;
 	      var male  = i, // 5
-	          female  = i-cpx.def.the_surrounds.length, // 2
-	          tube_b = i-cpx.def.the_base.length; //
-	          if (i-cpx.def.the_base.length+2 < cpx.def.the_base.length){
-	            var tube_a = i-cpx.def.the_base.length+2;
+	          female  = i-cpx.def.segment.surrounds, // 2
+	          tube_b = i-cpx.def.segment.base; //
+	          if (i-cpx.def.segment.base+2 < cpx.def.segment.base){
+	            var tube_a = i-cpx.def.segment.base+2;
 	          } else{
 	            var tube_a = 0;
 	          }
-	    } else if (i+1 == cpx.def.the_mirror.length*2) {
+	    } else if (i+1 == cpx.def.segment.mirror*2) {
 	      i+=1;
 	      var male   = i,
-	          female = i + cpx.def.the_connect.length - 1,
+	          female = i + cpx.def.segment.connect - 1,
 	          tube_a  = 0,
 	          tube_b  = i/2;
 	    } else if (i == k && !j) {
 	      var male   = i,
-	          female = i - cpx.def.the_connect.length + 1,
-	          tube_a  = cpx.def.the_mirror.length + cpx.def.the_base.length,
-	          tube_b  = cpx.def.the_mirror.length - cpx.def.the_surrounds.length;
+	          female = i - cpx.def.segment.connect + 1,
+	          tube_a  = cpx.def.segment.mirror + cpx.def.segment.base,
+	          tube_b  = cpx.def.segment.mirror - cpx.def.segment.surrounds;
 	    } else {
 	      exists = false;
 	    }
 	    return {
-	      'male'   : cpx.def.the_data[male],
-	      'female' : cpx.def.the_data[female],
+	      'male'   : cpx.def.shape[male],
+	      'female' : cpx.def.shape[female],
 	      'tube'   : {
-	        'a' : cpx.def.the_data[tube_a],
-	        'b' : cpx.def.the_data[tube_b],
+	        'a' : cpx.def.shape[tube_a],
+	        'b' : cpx.def.shape[tube_b],
 	      },
 	      'exists' : exists,
 	    }
@@ -634,14 +642,14 @@ var Circumplexus = function(format,container){
 	      'fill' : draw.group(),
 	      'tabs' : draw.group(),
 	    }
-	    for (i in cpx.def.the_data){
-	      cpx.def.the_data[i].x0 = cpx.def.the_data[i].x0*scale;
-	      cpx.def.the_data[i].y0 = cpx.def.the_data[i].y0*scale;
-	      cpx.def.the_data[i].x1 = cpx.def.the_data[i].x1*scale;
-	      cpx.def.the_data[i].y1 = cpx.def.the_data[i].y1*scale;
+	    for (i in cpx.def.shape){
+	      cpx.def.shape[i].x0 = cpx.def.shape[i].x0*scale;
+	      cpx.def.shape[i].y0 = cpx.def.shape[i].y0*scale;
+	      cpx.def.shape[i].x1 = cpx.def.shape[i].x1*scale;
+	      cpx.def.shape[i].y1 = cpx.def.shape[i].y1*scale;
 	      var mode = cpx.def.strokeSVG[cpx.get.stroke(i)];
-	      var line = draw.line( cpx.def.the_data[i].x0, cpx.def.the_data[i].y0, cpx.def.the_data[i].x1, cpx.def.the_data[i].y1 ).style( mode );
-	      if(i < cpx.def.the_data.length-cpx.def.the_tabs.length){
+	      var line = draw.line( cpx.def.shape[i].x0, cpx.def.shape[i].y0, cpx.def.shape[i].x1, cpx.def.shape[i].y1 ).style( mode );
+	      if(i < cpx.def.shape.length-cpx.def.segment.tabs){
 	        groups.body.add(line);
 	      } else {
 	        groups.tabs.add(line);
@@ -677,14 +685,14 @@ var Circumplexus = function(format,container){
 	    groups.obj.cy((cpx.def.inch*11) /2-groups.obj.bbox().y);
 	  },
 	  PNG: function(img){
-			console.log(cpx.def.the_data);
+			// console.log(cpx.def.shape);
 	    var mode;
 	    var translate = cpx.relate.translation();
-	    for (i in cpx.def.the_data){
-	      cpx.def.the_data[i].x0 = (cpx.def.the_data[i].x0*translate.scale) + translate.x;
-	      cpx.def.the_data[i].y0 = (cpx.def.the_data[i].y0*translate.scale) + translate.y;
-	      cpx.def.the_data[i].x1 = (cpx.def.the_data[i].x1*translate.scale) + translate.x;
-	      cpx.def.the_data[i].y1 = (cpx.def.the_data[i].y1*translate.scale) + translate.y;
+	    for (i in cpx.def.shape){
+	      cpx.def.shape[i].x0 = (cpx.def.shape[i].x0*translate.scale) + translate.x;
+	      cpx.def.shape[i].y0 = (cpx.def.shape[i].y0*translate.scale) + translate.y;
+	      cpx.def.shape[i].x1 = (cpx.def.shape[i].x1*translate.scale) + translate.x;
+	      cpx.def.shape[i].y1 = (cpx.def.shape[i].y1*translate.scale) + translate.y;
 	    }
 	    var canvas = document.createElement('canvas');
 	    canvas.width = cpx.def.inch*8.5;
@@ -702,14 +710,14 @@ var Circumplexus = function(format,container){
 	    ctx.strokeStyle = '#555555';
 	    ctx.lineWidth = 1;
 	    ctx.save();
-	    for (var i = cpx.def.the_data.length-cpx.def.the_tabs.length; i < cpx.def.the_data.length; i+=3){
+	    for (var i = cpx.def.shape.length-cpx.def.segment.tabs; i < cpx.def.shape.length; i+=3){
 	      // mode = cpx.def.strokePNG[cpx.draw.stroke(i)];
 	      ctx.setLineDash(cpx.def.strokePNG.solid);
 	      ctx.beginPath();
-	      ctx.moveTo( cpx.def.the_data[i].x0, cpx.def.the_data[i].y0 );
-	      ctx.lineTo( cpx.def.the_data[i].x1, cpx.def.the_data[i].y1 );
-	      ctx.lineTo( cpx.def.the_data[i+1].x1, cpx.def.the_data[i+1].y1 );
-	      ctx.lineTo( cpx.def.the_data[i+2].x1, cpx.def.the_data[i+2].y1 );
+	      ctx.moveTo( cpx.def.shape[i].x0, cpx.def.shape[i].y0 );
+	      ctx.lineTo( cpx.def.shape[i].x1, cpx.def.shape[i].y1 );
+	      ctx.lineTo( cpx.def.shape[i+1].x1, cpx.def.shape[i+1].y1 );
+	      ctx.lineTo( cpx.def.shape[i+2].x1, cpx.def.shape[i+2].y1 );
 	      ctx.fill();
 	      ctx.stroke();
 	    }
@@ -779,22 +787,22 @@ var Circumplexus = function(format,container){
 	    ctx.lineWidth = 12;
 	    mode = cpx.def.strokePNG.solid;
 	    ctx.setLineDash(mode);
-	    for (var i = cpx.def.the_data.length-cpx.def.the_tabs.length-cpx.def.the_connect.length+1; i < cpx.def.the_data.length-cpx.def.the_tabs.length-1; i++){
+	    for (var i = cpx.def.shape.length-cpx.def.segment.tabs-cpx.def.segment.connect+1; i < cpx.def.shape.length-cpx.def.segment.tabs-1; i++){
 	      ctx.beginPath();
-	      ctx.moveTo( cpx.def.the_data[i].x0, cpx.def.the_data[i].y0 );
-	      ctx.lineTo( cpx.def.the_data[i].x1, cpx.def.the_data[i].y1 );
+	      ctx.moveTo( cpx.def.shape[i].x0, cpx.def.shape[i].y0 );
+	      ctx.lineTo( cpx.def.shape[i].x1, cpx.def.shape[i].y1 );
 	      ctx.stroke();
 	    }
 
 	    ctx.strokeStyle = '#FFF';
 	    ctx.lineWidth = 1;
 	    // LINES BEFORE TABS
-	    for (var i = 0; i < cpx.def.the_data.length-cpx.def.the_tabs.length; i++){
+	    for (var i = 0; i < cpx.def.shape.length-cpx.def.segment.tabs; i++){
 	      mode = cpx.def.strokePNG[cpx.draw.stroke(i)];
 	      ctx.setLineDash(mode);
 	      ctx.beginPath();
-	      ctx.moveTo( cpx.def.the_data[i].x0, cpx.def.the_data[i].y0 );
-	      ctx.lineTo( cpx.def.the_data[i].x1, cpx.def.the_data[i].y1 );
+	      ctx.moveTo( cpx.def.shape[i].x0, cpx.def.shape[i].y0 );
+	      ctx.lineTo( cpx.def.shape[i].x1, cpx.def.shape[i].y1 );
 	      ctx.stroke();
 	    }
 
@@ -816,16 +824,16 @@ var Circumplexus = function(format,container){
 	  },
 	  stroke: function(i){
 	    var style = {
-	      'even' : (cpx.def.the_base.length%2 == 0) ? true : false,
+	      'even' : (cpx.def.segment.base%2 == 0) ? true : false,
 	      'base' : {
-	        'a' : cpx.def.the_base.length,
-	        'b' : cpx.def.the_base.length + cpx.def.the_mirror.length,
+	        'a' : cpx.def.segment.base,
+	        'b' : cpx.def.segment.base + cpx.def.segment.mirror,
 	      },
 	      'mirror' : {
-	        'a' : cpx.def.the_mirror.length,
-	        'b' : cpx.def.the_mirror.length*2,
+	        'a' : cpx.def.segment.mirror,
+	        'b' : cpx.def.segment.mirror*2,
 	      },
-	      "tabs" : cpx.def.the_data.length - cpx.def.the_tabs.length - 1,
+	      "tabs" : cpx.def.shape.length - cpx.def.segment.tabs - 1,
 	    }
 	    var mode = 'solid';
 	    if(i < style.tabs){
@@ -866,20 +874,20 @@ var Circumplexus = function(format,container){
 	    var poly = [];
 
 	    if (type == 'initial'){
-	      for (i = 0; i < cpx.def.the_base.length; i++){
-	        points.push( [cpx.def.the_data[i].x0, cpx.def.the_data[i].y0] );
+	      for (i = 0; i < cpx.def.segment.base; i++){
+	        points.push( [cpx.def.shape[i].x0, cpx.def.shape[i].y0] );
 	      }
 	      poly.push(points);
 	    } else if (type == 'mirror'){
-	      for (i = cpx.def.the_mirror.length; i < cpx.def.the_mirror.length+cpx.def.the_base.length; i++){
-	        points.push( [cpx.def.the_data[i].x0, cpx.def.the_data[i].y0] );
+	      for (i = cpx.def.segment.mirror; i < cpx.def.segment.mirror+cpx.def.segment.base; i++){
+	        points.push( [cpx.def.shape[i].x0, cpx.def.shape[i].y0] );
 	      }
 	      poly.push(points);
 	    } else if (type =='center'){
-	      for(var i = cpx.def.the_mirror.length*2; i < cpx.def.the_mirror.length*2+cpx.def.the_connect.length-1; i++){
+	      for(var i = cpx.def.segment.mirror*2; i < cpx.def.segment.mirror*2+cpx.def.segment.connect-1; i++){
 	        poly.push([
-	          [[cpx.def.the_data[i].x0, cpx.def.the_data[i].y0],[cpx.def.the_data[i].x1, cpx.def.the_data[i].y1]],
-	          [[cpx.def.the_data[i+1].x1, cpx.def.the_data[i+1].y1],[cpx.def.the_data[i+1].x0, cpx.def.the_data[i+1].y0]],
+	          [[cpx.def.shape[i].x0, cpx.def.shape[i].y0],[cpx.def.shape[i].x1, cpx.def.shape[i].y1]],
+	          [[cpx.def.shape[i+1].x1, cpx.def.shape[i+1].y1],[cpx.def.shape[i+1].x0, cpx.def.shape[i+1].y0]],
 	        ]);
 	      }
 	    }
@@ -890,34 +898,34 @@ var Circumplexus = function(format,container){
 	    var poly = [];
 
 	    if (type == 'initial'){
-	      for (i = 0; i < cpx.def.the_base.length; i++){
-	        poly.push( [cpx.def.the_data[i].x0, cpx.def.the_data[i].y0] );
+	      for (i = 0; i < cpx.def.segment.base; i++){
+	        poly.push( [cpx.def.shape[i].x0, cpx.def.shape[i].y0] );
 	      }
 	    } else if (type == 'mirror'){
-	      for (i = cpx.def.the_mirror.length; i < cpx.def.the_mirror.length+cpx.def.the_base.length; i++){
-	        poly.push( [cpx.def.the_data[i].x0, cpx.def.the_data[i].y0] );
+	      for (i = cpx.def.segment.mirror; i < cpx.def.segment.mirror+cpx.def.segment.base; i++){
+	        poly.push( [cpx.def.shape[i].x0, cpx.def.shape[i].y0] );
 	      }
 	    } else if (type =='center'){
-	      for(var i = cpx.def.the_mirror.length*2; i < cpx.def.the_mirror.length*2+cpx.def.the_connect.length; i++){
-	        points.push([cpx.def.the_data[i].x0, cpx.def.the_data[i].y0]);
-	        // points.push([cpx.def.the_data[i].x1, cpx.def.the_data[i].y1]);
+	      for(var i = cpx.def.segment.mirror*2; i < cpx.def.segment.mirror*2+cpx.def.segment.connect; i++){
+	        points.push([cpx.def.shape[i].x0, cpx.def.shape[i].y0]);
+	        // points.push([cpx.def.shape[i].x1, cpx.def.shape[i].y1]);
 	        poly.push(points);
 	      }
-	      for(var i = cpx.def.the_mirror.length*2+cpx.def.the_connect.length-1; i > cpx.def.the_mirror.length*2-1; i--){
-	        // points.push([cpx.def.the_data[i].x0, cpx.def.the_data[i].y0]);
-	        points.push([cpx.def.the_data[i].x1, cpx.def.the_data[i].y1]);
+	      for(var i = cpx.def.segment.mirror*2+cpx.def.segment.connect-1; i > cpx.def.segment.mirror*2-1; i--){
+	        // points.push([cpx.def.shape[i].x0, cpx.def.shape[i].y0]);
+	        points.push([cpx.def.shape[i].x1, cpx.def.shape[i].y1]);
 	        poly.push(points);
 	      }
 	    } else if (type == 'all'){
 	      // TODO
-	      // 	for(i =cpx.def.the_data.length-1; i > cpx.def.the_data.length-cpx.def.the_tabs.length-cpx.def.the_mirror.length; i--){
-	      // 		poly.push( [cpx.def.the_data[i].x0, cpx.def.the_data[i].y0] );
+	      // 	for(i =cpx.def.shape.length-1; i > cpx.def.shape.length-cpx.def.segment.tabs-cpx.def.segment.mirror; i--){
+	      // 		poly.push( [cpx.def.shape[i].x0, cpx.def.shape[i].y0] );
 	      // 	}
-	      // 	for(i = (cpx.def.the_base.length-1)*2; i > cpx.def.the_base.length-1; i--){
-	      // 		poly.push( [cpx.def.the_data[i].x0, cpx.def.the_data[i].y0] );
+	      // 	for(i = (cpx.def.segment.base-1)*2; i > cpx.def.segment.base-1; i--){
+	      // 		poly.push( [cpx.def.shape[i].x0, cpx.def.shape[i].y0] );
 	      // 	}
-	      // 	var connect = cpx.def.the_data.length-cpx.def.the_tabs.length-cpx.def.the_connect.length+1;
-	      // 	poly.push( [cpx.def.the_data[connect].x0, cpx.def.the_data[connect].y0] )
+	      // 	var connect = cpx.def.shape.length-cpx.def.segment.tabs-cpx.def.segment.connect+1;
+	      // 	poly.push( [cpx.def.shape[connect].x0, cpx.def.shape[connect].y0] )
 	    }
 	    return poly;
 	  }
