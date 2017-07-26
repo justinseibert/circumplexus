@@ -1,21 +1,21 @@
 Circumplexus.prototype.draw = {
   SVG: function() {
-    var scale = s.get.scale();
-    var draw = SVG('canvas').size(s.init.inch*8.5, s.init.inch*11).spof();
+    var scale = cpx.get.scale();
+    var draw = SVG('canvas').size(cpx.def.inch*8.5, cpx.def.inch*11).spof();
     var groups = {
       'obj'  : draw.group(),
       'body' : draw.group(),
       'fill' : draw.group(),
       'tabs' : draw.group(),
     }
-    for (i in s.init.the_data){
-      s.init.the_data[i].x0 = s.init.the_data[i].x0*scale;
-      s.init.the_data[i].y0 = s.init.the_data[i].y0*scale;
-      s.init.the_data[i].x1 = s.init.the_data[i].x1*scale;
-      s.init.the_data[i].y1 = s.init.the_data[i].y1*scale;
-      var mode = s.init.strokeSVG[s.get.stroke(i)];
-      var line = draw.line( s.init.the_data[i].x0, s.init.the_data[i].y0, s.init.the_data[i].x1, s.init.the_data[i].y1 ).style( mode );
-      if(i < s.init.the_data.length-s.init.the_tabs.length){
+    for (i in cpx.def.the_data){
+      cpx.def.the_data[i].x0 = cpx.def.the_data[i].x0*scale;
+      cpx.def.the_data[i].y0 = cpx.def.the_data[i].y0*scale;
+      cpx.def.the_data[i].x1 = cpx.def.the_data[i].x1*scale;
+      cpx.def.the_data[i].y1 = cpx.def.the_data[i].y1*scale;
+      var mode = cpx.def.strokeSVG[cpx.get.stroke(i)];
+      var line = draw.line( cpx.def.the_data[i].x0, cpx.def.the_data[i].y0, cpx.def.the_data[i].x1, cpx.def.the_data[i].y1 ).style( mode );
+      if(i < cpx.def.the_data.length-cpx.def.the_tabs.length){
         groups.body.add(line);
       } else {
         groups.tabs.add(line);
@@ -23,13 +23,13 @@ Circumplexus.prototype.draw = {
     }
     var polygon = {
       'initial' : {
-        'plot'    : s.get.fill('initial'),
+        'plot'    : cpx.get.fill('initial'),
       },
       'mirror'  : {
-        'plot'    : s.get.fill('mirror'),
+        'plot'    : cpx.get.fill('mirror'),
       },
       'center'  : {
-        'plot'    : s.get.fill('center'),
+        'plot'    : cpx.get.fill('center'),
       }
     }
     var p = [];
@@ -38,8 +38,8 @@ Circumplexus.prototype.draw = {
         var instance = i+j;
         p[instance] = draw
           .polygon(polygon[i].plot[j])
-          .fill(s.init.image)
-          .stroke(s.init.strokeSVG.none)
+          .fill(cpx.def.image)
+          .stroke(cpx.def.strokeSVG.none)
         ;
         groups.fill.add( p[instance] );
       }
@@ -47,27 +47,27 @@ Circumplexus.prototype.draw = {
     groups.obj.add(groups.tabs);
     groups.obj.add(groups.fill);
     groups.obj.add(groups.body);
-    groups.obj.cx((s.init.inch*8.5)/2-groups.obj.bbox().x);
-    groups.obj.cy((s.init.inch*11) /2-groups.obj.bbox().y);
+    groups.obj.cx((cpx.def.inch*8.5)/2-groups.obj.bbox().x);
+    groups.obj.cy((cpx.def.inch*11) /2-groups.obj.bbox().y);
   },
   PNG: function(img){
     var mode;
-    var translate = s.relate.translation();
-    for (i in s.init.the_data){
-      s.init.the_data[i].x0 = (s.init.the_data[i].x0*translate.scale) + translate.x;
-      s.init.the_data[i].y0 = (s.init.the_data[i].y0*translate.scale) + translate.y;
-      s.init.the_data[i].x1 = (s.init.the_data[i].x1*translate.scale) + translate.x;
-      s.init.the_data[i].y1 = (s.init.the_data[i].y1*translate.scale) + translate.y;
+    var translate = cpx.relate.translation();
+    for (i in cpx.def.the_data){
+      cpx.def.the_data[i].x0 = (cpx.def.the_data[i].x0*translate.scale) + translate.x;
+      cpx.def.the_data[i].y0 = (cpx.def.the_data[i].y0*translate.scale) + translate.y;
+      cpx.def.the_data[i].x1 = (cpx.def.the_data[i].x1*translate.scale) + translate.x;
+      cpx.def.the_data[i].y1 = (cpx.def.the_data[i].y1*translate.scale) + translate.y;
     }
     var canvas = document.createElement('canvas');
-    canvas.width = s.init.inch*8.5;
-    canvas.height = s.init.inch*11.0;
+    canvas.width = cpx.def.inch*8.5;
+    canvas.height = cpx.def.inch*11.0;
 
     var ctx = canvas.getContext('2d');
     var fill = {
-      'initial' : s.draw.fillPNG('initial'),
-      'mirror'  : s.draw.fillPNG('mirror'),
-      'center'  : s.draw.fillPNG('center'),
+      'initial' : cpx.draw.fillPNG('initial'),
+      'mirror'  : cpx.draw.fillPNG('mirror'),
+      'center'  : cpx.draw.fillPNG('center'),
     }
     ctx.lineCap = 'butt';
     // TABS
@@ -75,14 +75,14 @@ Circumplexus.prototype.draw = {
     ctx.strokeStyle = '#555555';
     ctx.lineWidth = 1;
     ctx.save();
-    for (var i = s.init.the_data.length-s.init.the_tabs.length; i < s.init.the_data.length; i+=3){
-      // mode = s.init.strokePNG[s.draw.stroke(i)];
-      ctx.setLineDash(s.init.strokePNG.solid);
+    for (var i = cpx.def.the_data.length-cpx.def.the_tabs.length; i < cpx.def.the_data.length; i+=3){
+      // mode = cpx.def.strokePNG[cpx.draw.stroke(i)];
+      ctx.setLineDash(cpx.def.strokePNG.solid);
       ctx.beginPath();
-      ctx.moveTo( s.init.the_data[i].x0, s.init.the_data[i].y0 );
-      ctx.lineTo( s.init.the_data[i].x1, s.init.the_data[i].y1 );
-      ctx.lineTo( s.init.the_data[i+1].x1, s.init.the_data[i+1].y1 );
-      ctx.lineTo( s.init.the_data[i+2].x1, s.init.the_data[i+2].y1 );
+      ctx.moveTo( cpx.def.the_data[i].x0, cpx.def.the_data[i].y0 );
+      ctx.lineTo( cpx.def.the_data[i].x1, cpx.def.the_data[i].y1 );
+      ctx.lineTo( cpx.def.the_data[i+1].x1, cpx.def.the_data[i+1].y1 );
+      ctx.lineTo( cpx.def.the_data[i+2].x1, cpx.def.the_data[i+2].y1 );
       ctx.fill();
       ctx.stroke();
     }
@@ -92,15 +92,15 @@ Circumplexus.prototype.draw = {
     // ctx.fillStyle = ctx.createPattern(img, 'repeat');
     // ctx.strokeStyle = '#FFFFFF';
     // ctx.lineWidth = 12;
-    // mode = s.init.strokePNG.solid;
+    // mode = cpx.def.strokePNG.solid;
     // ctx.save();
     // for (var point in fill.initial){
     // 	var poly = fill.initial;
     // 	if (point > 0){
-    // 		ctx.lineTo(poly[point][s.init.x], poly[point][s.init.y]);
+    // 		ctx.lineTo(poly[point][cpx.def.x], poly[point][cpx.def.y]);
     // 	} else {
     // 		ctx.beginPath();
-    // 		ctx.moveTo(fill.initial[0][s.init.x], fill.initial[0][s.init.y]);
+    // 		ctx.moveTo(fill.initial[0][cpx.def.x], fill.initial[0][cpx.def.y]);
     // 	}
     // }
     // ctx.closePath();
@@ -114,10 +114,10 @@ Circumplexus.prototype.draw = {
     // for (point in fill.mirror){
     // 	var poly = fill.mirror;
     // 	if (point > 0){
-    // 		ctx.lineTo(poly[point][s.init.x], poly[point][s.init.y]);
+    // 		ctx.lineTo(poly[point][cpx.def.x], poly[point][cpx.def.y]);
     // 	} else {
     // 		ctx.beginPath();
-    // 		ctx.moveTo(poly[point][s.init.x], poly[point][s.init.y]);
+    // 		ctx.moveTo(poly[point][cpx.def.x], poly[point][cpx.def.y]);
     // 	}
     // }
     // ctx.closePath();
@@ -133,10 +133,10 @@ Circumplexus.prototype.draw = {
     // 		var poly = fill.center[each];
     // 		for (point in poly){
     // 			if (point > 0){
-    // 				ctx.lineTo(poly[point][s.init.x], poly[point][s.init.y]);
+    // 				ctx.lineTo(poly[point][cpx.def.x], poly[point][cpx.def.y]);
     // 			} else {
     // 				ctx.beginPath();
-    // 				ctx.moveTo(poly[point][s.init.x], poly[point][s.init.y]);
+    // 				ctx.moveTo(poly[point][cpx.def.x], poly[point][cpx.def.y]);
     // 			}
     // 		}
     // 	}
@@ -150,29 +150,29 @@ Circumplexus.prototype.draw = {
     // THE CONNECTS - WHITE
     ctx.strokeStyle = '#FFFFFF';
     ctx.lineWidth = 12;
-    mode = s.init.strokePNG.solid;
+    mode = cpx.def.strokePNG.solid;
     ctx.setLineDash(mode);
-    for (var i = s.init.the_data.length-s.init.the_tabs.length-s.init.the_connect.length+1; i < s.init.the_data.length-s.init.the_tabs.length-1; i++){
+    for (var i = cpx.def.the_data.length-cpx.def.the_tabs.length-cpx.def.the_connect.length+1; i < cpx.def.the_data.length-cpx.def.the_tabs.length-1; i++){
       ctx.beginPath();
-      ctx.moveTo( s.init.the_data[i].x0, s.init.the_data[i].y0 );
-      ctx.lineTo( s.init.the_data[i].x1, s.init.the_data[i].y1 );
+      ctx.moveTo( cpx.def.the_data[i].x0, cpx.def.the_data[i].y0 );
+      ctx.lineTo( cpx.def.the_data[i].x1, cpx.def.the_data[i].y1 );
       ctx.stroke();
     }
 
     ctx.strokeStyle = '#FFF';
     ctx.lineWidth = 1;
     // LINES BEFORE TABS
-    for (var i = 0; i < s.init.the_data.length-s.init.the_tabs.length; i++){
-      mode = s.init.strokePNG[s.draw.stroke(i)];
+    for (var i = 0; i < cpx.def.the_data.length-cpx.def.the_tabs.length; i++){
+      mode = cpx.def.strokePNG[cpx.draw.stroke(i)];
       ctx.setLineDash(mode);
       ctx.beginPath();
-      ctx.moveTo( s.init.the_data[i].x0, s.init.the_data[i].y0 );
-      ctx.lineTo( s.init.the_data[i].x1, s.init.the_data[i].y1 );
+      ctx.moveTo( cpx.def.the_data[i].x0, cpx.def.the_data[i].y0 );
+      ctx.lineTo( cpx.def.the_data[i].x1, cpx.def.the_data[i].y1 );
       ctx.stroke();
     }
 
     var export_shape = canvas.toDataURL();
-    var page = document.getElementById(s.init.container);
+    var page = document.getElementById(cpx.def.container);
 
     // var page = document.createElement('div');
     var anchor = document.createElement('a');
@@ -189,16 +189,16 @@ Circumplexus.prototype.draw = {
   },
   stroke: function(i){
     var style = {
-      'even' : (s.init.the_base.length%2 == 0) ? true : false,
+      'even' : (cpx.def.the_base.length%2 == 0) ? true : false,
       'base' : {
-        'a' : s.init.the_base.length,
-        'b' : s.init.the_base.length + s.init.the_mirror.length,
+        'a' : cpx.def.the_base.length,
+        'b' : cpx.def.the_base.length + cpx.def.the_mirror.length,
       },
       'mirror' : {
-        'a' : s.init.the_mirror.length,
-        'b' : s.init.the_mirror.length*2,
+        'a' : cpx.def.the_mirror.length,
+        'b' : cpx.def.the_mirror.length*2,
       },
-      "tabs" : s.init.the_data.length - s.init.the_tabs.length - 1,
+      "tabs" : cpx.def.the_data.length - cpx.def.the_tabs.length - 1,
     }
     var mode = 'solid';
     if(i < style.tabs){
@@ -239,20 +239,20 @@ Circumplexus.prototype.draw = {
     var poly = [];
 
     if (type == 'initial'){
-      for (i = 0; i < s.init.the_base.length; i++){
-        points.push( [s.init.the_data[i].x0, s.init.the_data[i].y0] );
+      for (i = 0; i < cpx.def.the_base.length; i++){
+        points.push( [cpx.def.the_data[i].x0, cpx.def.the_data[i].y0] );
       }
       poly.push(points);
     } else if (type == 'mirror'){
-      for (i = s.init.the_mirror.length; i < s.init.the_mirror.length+s.init.the_base.length; i++){
-        points.push( [s.init.the_data[i].x0, s.init.the_data[i].y0] );
+      for (i = cpx.def.the_mirror.length; i < cpx.def.the_mirror.length+cpx.def.the_base.length; i++){
+        points.push( [cpx.def.the_data[i].x0, cpx.def.the_data[i].y0] );
       }
       poly.push(points);
     } else if (type =='center'){
-      for(var i = s.init.the_mirror.length*2; i < s.init.the_mirror.length*2+s.init.the_connect.length-1; i++){
+      for(var i = cpx.def.the_mirror.length*2; i < cpx.def.the_mirror.length*2+cpx.def.the_connect.length-1; i++){
         poly.push([
-          [[s.init.the_data[i].x0, s.init.the_data[i].y0],[s.init.the_data[i].x1, s.init.the_data[i].y1]],
-          [[s.init.the_data[i+1].x1, s.init.the_data[i+1].y1],[s.init.the_data[i+1].x0, s.init.the_data[i+1].y0]],
+          [[cpx.def.the_data[i].x0, cpx.def.the_data[i].y0],[cpx.def.the_data[i].x1, cpx.def.the_data[i].y1]],
+          [[cpx.def.the_data[i+1].x1, cpx.def.the_data[i+1].y1],[cpx.def.the_data[i+1].x0, cpx.def.the_data[i+1].y0]],
         ]);
       }
     }
@@ -263,34 +263,34 @@ Circumplexus.prototype.draw = {
     var poly = [];
 
     if (type == 'initial'){
-      for (i = 0; i < s.init.the_base.length; i++){
-        poly.push( [s.init.the_data[i].x0, s.init.the_data[i].y0] );
+      for (i = 0; i < cpx.def.the_base.length; i++){
+        poly.push( [cpx.def.the_data[i].x0, cpx.def.the_data[i].y0] );
       }
     } else if (type == 'mirror'){
-      for (i = s.init.the_mirror.length; i < s.init.the_mirror.length+s.init.the_base.length; i++){
-        poly.push( [s.init.the_data[i].x0, s.init.the_data[i].y0] );
+      for (i = cpx.def.the_mirror.length; i < cpx.def.the_mirror.length+cpx.def.the_base.length; i++){
+        poly.push( [cpx.def.the_data[i].x0, cpx.def.the_data[i].y0] );
       }
     } else if (type =='center'){
-      for(var i = s.init.the_mirror.length*2; i < s.init.the_mirror.length*2+s.init.the_connect.length; i++){
-        points.push([s.init.the_data[i].x0, s.init.the_data[i].y0]);
-        // points.push([s.init.the_data[i].x1, s.init.the_data[i].y1]);
+      for(var i = cpx.def.the_mirror.length*2; i < cpx.def.the_mirror.length*2+cpx.def.the_connect.length; i++){
+        points.push([cpx.def.the_data[i].x0, cpx.def.the_data[i].y0]);
+        // points.push([cpx.def.the_data[i].x1, cpx.def.the_data[i].y1]);
         poly.push(points);
       }
-      for(var i = s.init.the_mirror.length*2+s.init.the_connect.length-1; i > s.init.the_mirror.length*2-1; i--){
-        // points.push([s.init.the_data[i].x0, s.init.the_data[i].y0]);
-        points.push([s.init.the_data[i].x1, s.init.the_data[i].y1]);
+      for(var i = cpx.def.the_mirror.length*2+cpx.def.the_connect.length-1; i > cpx.def.the_mirror.length*2-1; i--){
+        // points.push([cpx.def.the_data[i].x0, cpx.def.the_data[i].y0]);
+        points.push([cpx.def.the_data[i].x1, cpx.def.the_data[i].y1]);
         poly.push(points);
       }
     } else if (type == 'all'){
       // TODO
-      // 	for(i =s.init.the_data.length-1; i > s.init.the_data.length-s.init.the_tabs.length-s.init.the_mirror.length; i--){
-      // 		poly.push( [s.init.the_data[i].x0, s.init.the_data[i].y0] );
+      // 	for(i =cpx.def.the_data.length-1; i > cpx.def.the_data.length-cpx.def.the_tabs.length-cpx.def.the_mirror.length; i--){
+      // 		poly.push( [cpx.def.the_data[i].x0, cpx.def.the_data[i].y0] );
       // 	}
-      // 	for(i = (s.init.the_base.length-1)*2; i > s.init.the_base.length-1; i--){
-      // 		poly.push( [s.init.the_data[i].x0, s.init.the_data[i].y0] );
+      // 	for(i = (cpx.def.the_base.length-1)*2; i > cpx.def.the_base.length-1; i--){
+      // 		poly.push( [cpx.def.the_data[i].x0, cpx.def.the_data[i].y0] );
       // 	}
-      // 	var connect = s.init.the_data.length-s.init.the_tabs.length-s.init.the_connect.length+1;
-      // 	poly.push( [s.init.the_data[connect].x0, s.init.the_data[connect].y0] )
+      // 	var connect = cpx.def.the_data.length-cpx.def.the_tabs.length-cpx.def.the_connect.length+1;
+      // 	poly.push( [cpx.def.the_data[connect].x0, cpx.def.the_data[connect].y0] )
     }
     return poly;
   }

@@ -1,6 +1,5 @@
 Circumplexus.prototype.relate = {
   surround: function(coords) {
-    console.log('surround\n',s);
     /******
     this steps takes the provided shape
     and calculates the surrounding (folded) edges.
@@ -11,32 +10,32 @@ Circumplexus.prototype.relate = {
     ******/
     var surround = [];
     // generate all calculations from previously solved points
-    for (var i = s.init.the_base.length-1; i > 0; i--) {
+    for (var i = cpx.def.the_base.length-1; i > 0; i--) {
       // x1 minus x0 implies counterclockwise creation of base-shape
       // angles in radians
       var angle = {
-        'given' : s.init.temple,
+        'given' : cpx.def.temple,
         'right' : Math.PI/2,
-        'found' : Math.PI/2 - s.init.temple,
+        'found' : Math.PI/2 - cpx.def.temple,
       }
       var delta = {
-        'x' : s.init.the_data[i].delta.x,
-        'y' : s.init.the_data[i].delta.y,
+        'x' : cpx.def.the_data[i].delta.x,
+        'y' : cpx.def.the_data[i].delta.y,
       }
       var distance = {
-        'x': s.geom.lawofsines(delta.x, angle.right, false, angle.given),
-        'y': s.geom.hypotenuse(delta.y, s.geom.lawofsines(delta.x, angle.right, false, angle.found)),
+        'x': cpx.geom.lawofsines(delta.x, angle.right, false, angle.given),
+        'y': cpx.geom.hypotenuse(delta.y, cpx.geom.lawofsines(delta.x, angle.right, false, angle.found)),
       }
-      var point = (i < s.init.the_base.length-1) ? surround : s.init.the_shape;
+      var point = (i < cpx.def.the_base.length-1) ? surround : cpx.def.the_shape;
       var previous = point.length-1;
       var segment = [
-        [ point[previous][1][s.init.x], point[previous][1][s.init.y] ],
-        [ point[previous][1][s.init.x]+distance.x, point[previous][1][s.init.y]+distance.y ]
+        [ point[previous][1][cpx.def.x], point[previous][1][cpx.def.y] ],
+        [ point[previous][1][cpx.def.x]+distance.x, point[previous][1][cpx.def.y]+distance.y ]
       ];
       surround.push(segment);
     }
     surround.reverse().forEach(function(segment){
-      s.update(segment,'the_surrounds');
+      cpx.update(segment,'the_surrounds');
     });
   },
   mirror: function(coords,flip,origin,array){
@@ -47,16 +46,16 @@ Circumplexus.prototype.relate = {
           the_axis + (the axis - the coord)
       ******/
       var i = 0;
-      var complete = (coords == s.init.the_tabs) ? coords.length-3 : coords.length;
+      var complete = (coords == cpx.def.the_tabs) ? coords.length-3 : coords.length;
 
       if (flip == 'vertical'){
-        var axis = s.init.the_data[origin].x0 + s.init.offset;
+        var axis = cpx.def.the_data[origin].x0 + cpx.def.offset;
         while (i < complete) {
           var segment = [
-            [ axis + (axis - coords[i][0][s.init.x]), coords[i][0][s.init.y] ],
-            [ axis + (axis - coords[i][1][s.init.x]), coords[i][1][s.init.y] ],
+            [ axis + (axis - coords[i][0][cpx.def.x]), coords[i][0][cpx.def.y] ],
+            [ axis + (axis - coords[i][1][cpx.def.x]), coords[i][1][cpx.def.y] ],
           ];
-          s.update(segment,array);
+          cpx.update(segment,array);
           i++;
         }
       }
@@ -68,37 +67,37 @@ Circumplexus.prototype.relate = {
     for (var i = 0; i < complete; i++) {
       var j = i+complete;
       var segment = [
-          [ s.init.the_data[i].x1, s.init.the_data[i].y1 ],
-          [ s.init.the_data[j].x1, s.init.the_data[j].y1 ],
+          [ cpx.def.the_data[i].x1, cpx.def.the_data[i].y1 ],
+          [ cpx.def.the_data[j].x1, cpx.def.the_data[j].y1 ],
       ];
       connect.push(segment);
       if (i == 0) {
         var segment = [
-            [ s.init.the_data[i].x0, s.init.the_data[i].y0 ],
-            [ s.init.the_data[j].x0, s.init.the_data[j].y0 ],
+            [ cpx.def.the_data[i].x0, cpx.def.the_data[i].y0 ],
+            [ cpx.def.the_data[j].x0, cpx.def.the_data[j].y0 ],
         ];
         connect.push(segment);
         split = connect.splice(0,connect.length);
-        i = s.init.the_surrounds.length;
+        i = cpx.def.the_surrounds.length;
       }
     }
     split.concat(connect.reverse()).reverse().forEach(function(segment){
-      s.update(segment,'the_connect');
+      cpx.update(segment,'the_connect');
     });
   },
   tabs: function(){
     var i = 1;
-    var j = (s.init.the_base.length%2 > 0) ? true : false;
-    var k = s.init.the_shape.length-1;
+    var j = (cpx.def.the_base.length%2 > 0) ? true : false;
+    var k = cpx.def.the_shape.length-1;
 
     while (i <= k){
-      var correlation = s.relate.correlation(i,j,k);
+      var correlation = cpx.relate.correlation(i,j,k);
       if (correlation.exists){
-        var tubes = s.relate.tubes(correlation.female,correlation.tube);
-        var theta = s.relate.theta(tubes.a,tubes.b,correlation.male.angle);
+        var tubes = cpx.relate.tubes(correlation.female,correlation.tube);
+        var theta = cpx.relate.theta(tubes.a,tubes.b,correlation.male.angle);
         var distance = {
-          'a' : s.geom.distance(tubes.a),
-          'b' : s.geom.distance(tubes.b),
+          'a' : cpx.geom.distance(tubes.a),
+          'b' : cpx.geom.distance(tubes.b),
         }
 
         // var correction = (i == k) ? Math.PI : 0;
@@ -125,7 +124,7 @@ Circumplexus.prototype.relate = {
             tabs[l],
             tabs[l+1],
           ];
-          s.update(segment,'the_tabs');
+          cpx.update(segment,'the_tabs');
         }
       }
       i+=2;
@@ -133,8 +132,8 @@ Circumplexus.prototype.relate = {
   },
   bounds: function(xs, ys){
     // must be called before new data is pushed to the_data
-    var bound = s.init.bounds;
-    if (s.init.the_data.length < 1){
+    var bound = cpx.def.bounds;
+    if (cpx.def.the_data.length < 1){
       bound.left   = (xs[0] < xs[1]) ? xs[0] : xs[1];
       bound.right  = (xs[0] > xs[1]) ? xs[0] : xs[1];
       bound.top    = (ys[0] < ys[1]) ? ys[0] : ys[1];
@@ -152,26 +151,26 @@ Circumplexus.prototype.relate = {
   },
   translation: function(){
     var scale, x, y;
-    if (s.init.scaled == false) {
-      var bound_width  = Math.abs(s.init.bounds.left - s.init.bounds.right);
-      var bound_height = Math.abs(s.init.bounds.top - s.init.bounds.bottom);
+    if (cpx.def.scaled == false) {
+      var bound_width  = Math.abs(cpx.def.bounds.left - cpx.def.bounds.right);
+      var bound_height = Math.abs(cpx.def.bounds.top - cpx.def.bounds.bottom);
       if (bound_width/bound_height > 8.5/11){
-        scale = (s.init.inch*8.5)*(1/bound_width);
+        scale = (cpx.def.inch*8.5)*(1/bound_width);
       } else {
-        scale = (s.init.inch*11)*(1/bound_height);
+        scale = (cpx.def.inch*11)*(1/bound_height);
       }
-      s.init.scaled = true;
+      cpx.def.scaled = true;
     } else {
       scale = 1;
     }
-    // x = Math.abs(0 - s.init.bounds.left*scale);
-    // y = Math.abs(0 -s.init.bounds.top*scale);
+    // x = Math.abs(0 - cpx.def.bounds.left*scale);
+    // y = Math.abs(0 -cpx.def.bounds.top*scale);
     var difference = {
-      'x' : (s.init.inch*8.5 - (s.init.bounds.right*scale - s.init.bounds.left*scale))/2,
-      'y' : (s.init.inch*11 - (s.init.bounds.bottom*scale - s.init.bounds.top*scale))/2,
+      'x' : (cpx.def.inch*8.5 - (cpx.def.bounds.right*scale - cpx.def.bounds.left*scale))/2,
+      'y' : (cpx.def.inch*11 - (cpx.def.bounds.bottom*scale - cpx.def.bounds.top*scale))/2,
     }
-    x = Math.abs(0 - s.init.bounds.left*scale) + difference.x;
-    y = Math.abs(0 -s.init.bounds.top*scale) + difference.y;
+    x = Math.abs(0 - cpx.def.bounds.left*scale) + difference.x;
+    y = Math.abs(0 -cpx.def.bounds.top*scale) + difference.y;
     return {
       'scale' : scale,
       'x' : x,
@@ -183,41 +182,41 @@ Circumplexus.prototype.relate = {
     // these points are reversed because direction of surrounds
     // to get tube0 to point to prong0, start tube0 from female point 1
     var exists = true;
-    if (i < s.init.the_base.length) {
+    if (i < cpx.def.the_base.length) {
       var male  = i, // 1
-          female  = i+s.init.the_surrounds.length, // 4
-          tube_a = i-1+s.init.the_mirror.length*2, // 14
-          tube_b = i+s.init.the_mirror.length*2; // 15
-    } else if (i < s.init.the_mirror.length) {
-      i = (j && (i+1 != s.init.the_mirror.length)) ? i+1 : i;
+          female  = i+cpx.def.the_surrounds.length, // 4
+          tube_a = i-1+cpx.def.the_mirror.length*2, // 14
+          tube_b = i+cpx.def.the_mirror.length*2; // 15
+    } else if (i < cpx.def.the_mirror.length) {
+      i = (j && (i+1 != cpx.def.the_mirror.length)) ? i+1 : i;
       var male  = i, // 5
-          female  = i-s.init.the_surrounds.length, // 2
-          tube_b = i-s.init.the_base.length; //
-          if (i-s.init.the_base.length+2 < s.init.the_base.length){
-            var tube_a = i-s.init.the_base.length+2;
+          female  = i-cpx.def.the_surrounds.length, // 2
+          tube_b = i-cpx.def.the_base.length; //
+          if (i-cpx.def.the_base.length+2 < cpx.def.the_base.length){
+            var tube_a = i-cpx.def.the_base.length+2;
           } else{
             var tube_a = 0;
           }
-    } else if (i+1 == s.init.the_mirror.length*2) {
+    } else if (i+1 == cpx.def.the_mirror.length*2) {
       i+=1;
       var male   = i,
-          female = i + s.init.the_connect.length - 1,
+          female = i + cpx.def.the_connect.length - 1,
           tube_a  = 0,
           tube_b  = i/2;
     } else if (i == k && !j) {
       var male   = i,
-          female = i - s.init.the_connect.length + 1,
-          tube_a  = s.init.the_mirror.length + s.init.the_base.length,
-          tube_b  = s.init.the_mirror.length - s.init.the_surrounds.length;
+          female = i - cpx.def.the_connect.length + 1,
+          tube_a  = cpx.def.the_mirror.length + cpx.def.the_base.length,
+          tube_b  = cpx.def.the_mirror.length - cpx.def.the_surrounds.length;
     } else {
       exists = false;
     }
     return {
-      'male'   : s.init.the_data[male],
-      'female' : s.init.the_data[female],
+      'male'   : cpx.def.the_data[male],
+      'female' : cpx.def.the_data[female],
       'tube'   : {
-        'a' : s.init.the_data[tube_a],
-        'b' : s.init.the_data[tube_b],
+        'a' : cpx.def.the_data[tube_a],
+        'b' : cpx.def.the_data[tube_b],
       },
       'exists' : exists,
     }
@@ -262,8 +261,8 @@ Circumplexus.prototype.relate = {
     }
     var taper = 0.0;
     var theta = {
-      'a' : s.geom.angle_between(a,m.a),
-      'b' : s.geom.angle_between(b,m.b),
+      'a' : cpx.geom.angle_between(a,m.a),
+      'b' : cpx.geom.angle_between(b,m.b),
     }
     return {
       'a' : Math.PI - (Math.PI - male) - (Math.PI - theta.a) + taper,
