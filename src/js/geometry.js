@@ -1,7 +1,4 @@
 Circumplexus.prototype.geom = {
-  x: 0,
-  y: 1,
-  z: 2,
   range: function(min, max, val){
     return Math.round( (val/100)*(max-min)+min );
   },
